@@ -4,6 +4,7 @@ import json
 import time
 from base64 import b64encode
 from dotenv import load_dotenv
+import webbrowser
 
 load_dotenv()
 
@@ -40,8 +41,8 @@ PLATFORM_COLORS = {
     "Switch2": 0xE60012,
     "PS4": 0x003791,
     "PS5": 0x0A0A0A,
-    "XB1": 0x107C10,
-    "XSX": 0x107C10,
+    "Xbox One": 0x107C10,
+    "Xbox Series X/S": 0x107C10,
 }
 
 PLATFORM_ICON_URL = {
@@ -55,8 +56,8 @@ PLATFORM_ICON_URL = {
     "Switch2": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/switch.png",
     "PS4": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/ps4.png",
     "PS5": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/ps5.png",
-    "XB1": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/xbox.png",
-    "XSX": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/xboxs.png",
+    "Xbox One": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/xbox.png",
+    "Xbox Series X/S": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/xboxs.png",
 }
 
 ANDROID_BODY = {
@@ -143,7 +144,7 @@ def get_access_token():
         return refresh_access_token(STATIC_REFRESH_TOKEN)
 
     print("🔐 No valid token. Please log in manually to generate a new token.")
-    print(f"👉 Allez sur : https://www.epicgames.com/id/api/redirect?clientId={CLIENT_ID}&responseType=code")
+    webbrowser.open("https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code")
     code = input("📥 Enter the Epic Games code (in the URL after ?code=...): ").strip()
     if not code:
         return None
@@ -197,6 +198,10 @@ def send_discord_embed(platform, version, manifest_id, manifest_hash):
 
     if platform == "Windows UEFN":
         platform = "UEFN"
+    elif platform == "XSX":
+        platform = "Xbox Series X/S"
+    elif platform == "XB1":
+        platform = "Xbox One"
 
     embed = {
         "author": {
