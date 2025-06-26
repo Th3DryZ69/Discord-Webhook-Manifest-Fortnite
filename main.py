@@ -149,12 +149,12 @@ def get_access_token():
     if STATIC_REFRESH_TOKEN:
         return refresh_access_token(STATIC_REFRESH_TOKEN)
 
-    print("🔐 No valid token. Please log in manually to generate a new token.")
-    webbrowser.open("https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code")
-    code = input("📥 Enter the Epic Games code (in the URL after ?code=...): ").strip()
-    if not code:
-        return None
-    return get_new_access_token(code)
+    # print("🔐 No valid token. Please log in manually to generate a new token.")
+    # webbrowser.open("https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code")
+    # code = input("📥 Enter the Epic Games code (in the URL after ?code=...): ").strip()
+    # if not code:
+    #     return None
+    # return get_new_access_token(code)
 
 def load_known_versions():
     if os.path.isfile(VERSIONS_FILE):
