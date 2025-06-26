@@ -202,6 +202,8 @@ def send_discord_embed(platform, version, manifest_id, manifest_hash):
         platform = "Xbox Series X/S"
     elif platform == "XB1":
         platform = "Xbox One"
+    elif platform == "Android Shipping":
+        platform = "Android Apk"
 
     embed = {
         "author": {
