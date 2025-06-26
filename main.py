@@ -2,18 +2,14 @@ import requests
 import os
 import json
 import time
+import subprocess
+from urllib.parse import quote
 from base64 import b64encode
-from dotenv import load_dotenv
-import webbrowser
-
-load_dotenv()
 
 CLIENT_ID = '34a02cf8f4414e29b15921876da36f9a'
 CLIENT_SECRET = 'daafbccc737745039dffe53d94fc76cf'
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")
-STATIC_REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
-TOKENS_FILE = os.path.join(os.path.dirname(__file__), "tokens.json")
-VERSIONS_FILE = os.path.join(os.path.dirname(__file__), "latest.json")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL") # .env
+# WEBHOOK_URL = os.environ['WEBHOOK_URL'] # replit
 
 URLS = {
     'Android': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
@@ -21,7 +17,7 @@ URLS = {
     'IOS': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
     'Windows': '4fe75bbc5a674f4f9b356b5c90567da5/app/Fortnite',
     'Windows Content': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    'Windows UEFN': '1e8bda5cfbb641b9a9aea8bd62285f73/app/Fortnite_Studio',
+    # 'Windows UEFN': '1e8bda5cfbb641b9a9aea8bd62285f73/app/Fortnite_Studio',
     'Switch': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
     'Switch2': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
     'PS4': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
@@ -60,6 +56,20 @@ PLATFORM_ICON_URL = {
     "Xbox Series X/S": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/xboxs.png",
 }
 
+# PLATFORM_EMOJIS = {
+#     "Windows": "<:windows:1377998819941286049>",
+#     "Windows Content": "<:windows:1377998819941286049>",
+#     "Android": "<:android:1377998429493657611>",
+#     "Android Shipping": "<:android:1377998429493657611>",
+#     "IOS": "<:ios:1377996922907791391>",
+#     "Switch": "<:switch:1377998371658399974>",
+#     "Switch2": "<:switch:1377998371658399974>",
+#     "PS4": "<:ps4:1377998418370232370>",
+#     "PS5": "<:ps5:1377998403706818691>",
+#     "XB1": "<:xbox:1377998397633724526>",
+#     "XSX": "<:xboxs:1378000249909542913>",
+# }
+
 ANDROID_BODY = {
     "abis": ["arm64-v8a", "armeabi-v7a", "armeabi"],
     "apiLevel": 30,
@@ -81,75 +91,7 @@ ANDROID_BODY = {
     "version": "5.2.0"
 }
 
-def save_tokens(data):
-    with open(TOKENS_FILE, "w") as f:
-        json.dump(data, f, indent=4)
-
-def load_tokens():
-    if not os.path.isfile(TOKENS_FILE):
-        return None
-    with open(TOKENS_FILE, "r") as f:
-        return json.load(f)
-
-def get_new_access_token(code):
-    auth = b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
-    data = {
-        "grant_type": "authorization_code",
-        "code": code,
-        "scope": "launcher:download:live:* READ"
-    }
-    headers = {
-        "Authorization": f"Basic {auth}",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-    r = requests.post("https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token", data=data, headers=headers)
-    if r.status_code != 200:
-        print("Error token")
-        return None
-    result = r.json()
-    result["expires_at"] = int(time.time()) + result["expires_in"]
-    save_tokens(result)
-    return result["access_token"]
-
-def refresh_access_token(refresh_token):
-    auth = b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
-    data = {
-        "grant_type": "refresh_token",
-        "refresh_token": refresh_token
-    }
-    headers = {
-        "Authorization": f"Basic {auth}",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-    r = requests.post("https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token", data=data, headers=headers)
-    if r.status_code != 200:
-        print("Erreur refresh_token")
-        return None
-    result = r.json()
-    result["expires_at"] = int(time.time()) + result["expires_in"]
-    save_tokens(result)
-    return result["access_token"]
-
-def get_access_token():
-    tokens = load_tokens()
-    now = int(time.time())
-
-    if tokens:
-        if tokens.get("expires_at", 0) > now:
-            return tokens["access_token"]
-        elif tokens.get("refresh_token"):
-            return refresh_access_token(tokens["refresh_token"])
-
-    if STATIC_REFRESH_TOKEN:
-        return refresh_access_token(STATIC_REFRESH_TOKEN)
-
-    print("🔐 No valid token. Please log in manually to generate a new token.")
-    webbrowser.open("https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code")
-    code = input("📥 Enter the Epic Games code (in the URL after ?code=...): ").strip()
-    if not code:
-        return None
-    return get_new_access_token(code)
-
+VERSIONS_FILE = os.path.join(os.path.dirname(__file__), "latest.json")
 
 def load_known_versions():
     if os.path.isfile(VERSIONS_FILE):
@@ -166,6 +108,27 @@ def save_known_versions(known_versions):
             json.dump(known_versions, f, indent=4, ensure_ascii=False)
     except Exception as e:
         print(e)
+
+def get_access_token():
+    try:
+        auth = b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
+        resp = requests.post(
+            "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token",
+            data={
+                "grant_type": "client_credentials",
+                "token_token": "eg1",
+                "scope": "launcher:download:live:* READ"
+            },
+            headers={
+                "Authorization": f"Basic {auth}",
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        )
+        resp.raise_for_status()
+        return resp.json()['access_token']
+    except requests.RequestException as e:
+        print(f"Error token: {e}")
+        return None
 
 def get_manifest(logical_platform, token):
     platform = (
@@ -194,7 +157,63 @@ def get_manifest(logical_platform, token):
         print(f"Error for {logical_platform}: {e}")
         return None
 
-def send_discord_embed(platform, version, manifest_id, manifest_hash):
+def download_and_push_manifest(manifest_url, platform, manifest_id, version):
+    if platform == "Android":
+        folder = "manifests/Mobiles/Android"
+    elif platform == "Android Shipping":
+        folder = "manifests/Mobiles/Android/Shipping"
+    elif platform == "IOS":
+        folder = "manifests/Mobiles/IOS"
+    elif platform == "Windows":
+        folder = "manifests/PC/Windows"
+    elif platform == "Windows Content":
+        folder = "manifests/PC/Windows/Content"
+    elif platform == "Windows UEFN":
+        folder = "manifests/PC/UEFN"
+    elif platform == "Switch":
+        folder = "manifests/Consoles/Switch"
+    elif platform == "Switch2":
+        folder = "manifests/Consoles/Switch2"
+    elif platform == "PS4":
+        folder = "manifests/Consoles/PS4"
+    elif platform == "PS5":
+        folder = "manifests/Consoles/PS5"
+    elif platform == "XSX":
+        folder = "manifests/Consoles/XBoxSeriesX"
+    elif platform == "XB1":
+        folder = "manifests/Consoles/XBoxOne"
+    else:
+        print(f"Unsupported platform for manifest download: {platform}")
+    os.makedirs(folder, exist_ok=True)
+    filename = f"{version}.manifest"
+    filepath = os.path.join(folder, filename)
+
+    response = requests.get(manifest_url)
+    if response.status_code == 200:
+        if not os.path.exists(filepath):
+            with open(filepath, 'wb') as f:
+                f.write(response.content)
+            subprocess.run(["git", "add", filepath])
+            subprocess.run(["git", "commit", "-m", f"Add {platform} manifest for version {version} ({manifest_id})"])
+            subprocess.run(["git", "push"])
+        else:
+            print(f"The file '{filepath}' already exists. No downloads have been performed.")
+
+        github_path = f"{folder}/{filename}"
+        github_url = f"https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/{quote(github_path)}"
+
+        return github_url
+    else:
+        print(f"Error downloading manifest: {response.status_code}")
+        return manifest_url
+
+def send_discord_embed(platform, version, manifest_url, manifest_id, manifest_hash):
+    color = PLATFORM_COLORS.get(platform, 0xFFFFFF)
+    # emoji = PLATFORM_EMOJIS.get(platform, "📦")
+
+    github_url = download_and_push_manifest(manifest_url, platform, manifest_id, version)
+    manifest_value = f"[{manifest_id}]({github_url})"
+    # manifest_value = f"[{manifest_id}]({manifest_url})"
 
     if platform == "Windows UEFN":
         platform = "UEFN"
@@ -206,22 +225,21 @@ def send_discord_embed(platform, version, manifest_id, manifest_hash):
         platform = "Android Apk"
 
     embed = {
-        "author": {
-            "name": f"{platform} Fortnite Update",
-            "icon_url": PLATFORM_ICON_URL.get(platform, "")
-        },
-        "color": PLATFORM_COLORS.get(platform, 0xFFFFFF),
+        # "title": f"{emoji} {platform} Fortnite Update",
+        "author": {"name": f"{platform} Fortnite Update", "icon_url": PLATFORM_ICON_URL.get(platform, "")},
+        "color": color,
         "fields": [
-            {"name": "Build Version", "value": version, "inline": False},
-            {"name": "Manifest ID", "value": manifest_id, "inline": False},
-            {"name": "File Hash", "value": manifest_hash, "inline": False}
+            {"name": "Build Version", "value": version, "inline": True},
+            {"name": f"Manifest ID", "value": manifest_value, "inline": False},
+            {"name": f"File Hash", "value": manifest_hash, "inline": False}
         ]
     }
 
+    payload = {"embeds": [embed]}
     try:
-        requests.post(WEBHOOK_URL, json={"embeds": [embed]}).raise_for_status()
+        requests.post(WEBHOOK_URL, json=payload).raise_for_status()
     except Exception as e:
-        print(f"Erreur envoi embed : {e}")
+        print(e)
 
 def watch_manifests():
     token = get_access_token()
@@ -252,15 +270,17 @@ def watch_manifests():
 
             m = manifests[1] if len(manifests) > 1 else manifests[0]
             path = m.get('uri')
+            q = m.get('queryParams', [{}])[0]
+            manifest_url = f"{path}?{q.get('name')}={q.get('value')}"
             manifest_id = path.split("/")[-1].replace(".manifest", "")
             manifest_hash = elem.get('hash')
 
             if known_versions.get(platform) != version:
                 known_versions[platform] = version
                 save_known_versions(known_versions)
-                send_discord_embed(platform, version, manifest_id, manifest_hash)
+                send_discord_embed(platform, version, manifest_url, manifest_id, manifest_hash)
 
-        time.sleep(300)
+        time.sleep(150) # > 2.5 minutes
 
 if __name__ == "__main__":
     watch_manifests()
