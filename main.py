@@ -59,7 +59,6 @@ PLATFORM_ICON_URL = {
     "XSX": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/xboxs.png",
 }
 
-
 ANDROID_BODY = {
     "abis": ["arm64-v8a", "armeabi-v7a", "armeabi"],
     "apiLevel": 30,
@@ -104,7 +103,7 @@ def get_new_access_token(code):
     }
     r = requests.post("https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token", data=data, headers=headers)
     if r.status_code != 200:
-        print("❌ Erreur lors de l'obtention du token via code")
+        print("Error token")
         return None
     result = r.json()
     result["expires_at"] = int(time.time()) + result["expires_in"]
@@ -123,7 +122,7 @@ def refresh_access_token(refresh_token):
     }
     r = requests.post("https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token", data=data, headers=headers)
     if r.status_code != 200:
-        print("❌ Erreur lors du refresh du token")
+        print("Erreur refresh_token")
         return None
     result = r.json()
     result["expires_at"] = int(time.time()) + result["expires_in"]
@@ -138,15 +137,14 @@ def get_access_token():
         if tokens.get("expires_at", 0) > now:
             return tokens["access_token"]
         elif tokens.get("refresh_token"):
-            print("⏳ Refresh du token en cours...")
             return refresh_access_token(tokens["refresh_token"])
 
     if STATIC_REFRESH_TOKEN:
         return refresh_access_token(STATIC_REFRESH_TOKEN)
 
-    print("🔐 Aucun token valide. Veuillez vous connecter manuellement pour générer un nouveau token.")
+    print("🔐 No valid token. Please log in manually to generate a new token.")
     print(f"👉 Allez sur : https://www.epicgames.com/id/api/redirect?clientId={CLIENT_ID}&responseType=code")
-    code = input("📥 Entrez le code Epic Games (dans l'URL après ?code=...): ").strip()
+    code = input("📥 Enter the Epic Games code (in the URL after ?code=...): ").strip()
     if not code:
         return None
     return get_new_access_token(code)
