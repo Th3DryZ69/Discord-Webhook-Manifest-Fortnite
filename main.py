@@ -32,7 +32,7 @@ URLS = {
 PLATFORM_COLORS = {
     "Windows": 0x0078D7,
     "Windows Content": 0x0078D7,
-    "Windows UEFN": 0x0078D7,
+    "UEFN": 0x0078D7,
     "Android": 0x00C853,
     "Android Shipping": 0x00C853,
     "IOS": 0x999999,
@@ -45,18 +45,18 @@ PLATFORM_COLORS = {
 }
 
 PLATFORM_ICON_URL = {
-    "Windows": "https://github.com/Th3DryZ69/Webhook-Discord-Manifest-Fortnite/raw/refs/heads/railway/.github/icon/windows.png",
-    "Windows Content": "https://github.com/Th3DryZ69/Webhook-Discord-Manifest-Fortnite/raw/refs/heads/railway/.github/icon/windows.png",
-    "UEFN": "https://github.com/Th3DryZ69/Webhook-Discord-Manifest-Fortnite/raw/refs/heads/railway/.github/icon/uefn.png",
-    "Android": "https://github.com/Th3DryZ69/Webhook-Discord-Manifest-Fortnite/raw/refs/heads/railway/.github/icon/android.png",
-    "Android Shipping": "https://github.com/Th3DryZ69/Webhook-Discord-Manifest-Fortnite/raw/refs/heads/railway/.github/icon/android.png",
-    "IOS": "https://github.com/Th3DryZ69/Webhook-Discord-Manifest-Fortnite/raw/refs/heads/railway/.github/icon/ios.png",
-    "Switch": "https://github.com/Th3DryZ69/Webhook-Discord-Manifest-Fortnite/raw/refs/heads/railway/.github/icon/switch.png",
-    "Switch2": "https://github.com/Th3DryZ69/Webhook-Discord-Manifest-Fortnite/raw/refs/heads/railway/.github/icon/switch.png",
-    "PS4": "https://github.com/Th3DryZ69/Webhook-Discord-Manifest-Fortnite/raw/refs/heads/railway/.github/icon/ps4.png",
-    "PS5": "https://github.com/Th3DryZ69/Webhook-Discord-Manifest-Fortnite/raw/refs/heads/railway/.github/icon/ps5.png",
-    "XB1": "https://github.com/Th3DryZ69/Webhook-Discord-Manifest-Fortnite/raw/refs/heads/railway/.github/icon/xbox.png",
-    "XSX": "https://github.com/Th3DryZ69/Webhook-Discord-Manifest-Fortnite/raw/refs/heads/railway/.github/icon/xboxs.png",
+    "Windows": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/windows.png",
+    "Windows Content": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/windows.png",
+    "UEFN": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/uefn.png",
+    "Android": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/android.png",
+    "Android Shipping": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/android.png",
+    "IOS": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/ios.png",
+    "Switch": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/switch.png",
+    "Switch2": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/switch.png",
+    "PS4": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/ps4.png",
+    "PS5": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/ps5.png",
+    "XB1": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/xbox.png",
+    "XSX": "https://github.com/Th3DryZ69/Discord-Webhook-Manifest-Fortnite/raw/main/.github/icon/xboxs.png",
 }
 
 
@@ -170,15 +170,14 @@ def get_manifest(logical_platform, token):
         return None
 
 def send_discord_embed(platform, version, manifest_id, manifest_hash):
+
     if platform == "Windows UEFN":
-        display_name = "UEFN"
-    else:
-        display_name = platform
+        platform = "UEFN"
 
     embed = {
         "author": {
-            "name": f"{display_name} Fortnite Update",
-            "icon_url": PLATFORM_ICON_URL.get(display_name, "")
+            "name": f"{platform} Fortnite Update",
+            "icon_url": PLATFORM_ICON_URL.get(platform, "")
         },
         "color": PLATFORM_COLORS.get(platform, 0xFFFFFF),
         "fields": [
