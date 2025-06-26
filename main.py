@@ -16,18 +16,18 @@ TOKENS_FILE = os.path.join(os.path.dirname(__file__), "token.json")
 VERSIONS_FILE = os.path.join(os.path.dirname(__file__), "latest.json")
 
 URLS = {
-    'Android': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    'Android Shipping': '4fe75bbc5a674f4f9b356b5c90567da5/app/Fortnite',
-    'IOS': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    'Windows': '4fe75bbc5a674f4f9b356b5c90567da5/app/Fortnite',
-    'Windows Content': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    # 'Android': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    # 'Android Shipping': '4fe75bbc5a674f4f9b356b5c90567da5/app/Fortnite',
+    # 'IOS': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    # 'Windows': '4fe75bbc5a674f4f9b356b5c90567da5/app/Fortnite',
+    # 'Windows Content': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
     'Windows UEFN': '1e8bda5cfbb641b9a9aea8bd62285f73/app/Fortnite_Studio',
-    'Switch': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    'Switch2': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    'PS4': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    'PS5': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    'XB1': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    'XSX': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    # 'Switch': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    # 'Switch2': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    # 'PS4': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    # 'PS5': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    # 'XB1': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    # 'XSX': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
 }
 
 PLATFORM_COLORS = {
