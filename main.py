@@ -8,26 +8,29 @@ import webbrowser
 
 load_dotenv()
 
-CLIENT_ID = '34a02cf8f4414e29b15921876da36f9a'
-CLIENT_SECRET = 'daafbccc737745039dffe53d94fc76cf'
+LAUNCHER_CLIENT_ID = '34a02cf8f4414e29b15921876da36f9a'
+LAUNCHER_CLIENT_SECRET = 'daafbccc737745039dffe53d94fc76cf'
+ANDROID_CLIENT_ID = '3f69e56c7649492c8cc29f1af08a8a12'
+ANDROID_CLIENT_SECRET = 'b51ee9cb12234f50a69efa67ef53812e'
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
-STATIC_REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
-TOKENS_FILE = os.path.join(os.path.dirname(__file__), "token.json")
+ACCOUNT_ID = os.getenv("ACCOUNT_ID")
+DEVICE_ID = os.getenv("DEVICE_ID")
+SECRET_ID = os.getenv("SECRET_ID")
 VERSIONS_FILE = os.path.join(os.path.dirname(__file__), "latest.json")
 
 URLS = {
-    # 'Android': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    # 'Android Shipping': '4fe75bbc5a674f4f9b356b5c90567da5/app/Fortnite',
-    # 'IOS': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    # 'Windows': '4fe75bbc5a674f4f9b356b5c90567da5/app/Fortnite',
-    # 'Windows Content': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    'Android': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    'Android Shipping': '4fe75bbc5a674f4f9b356b5c90567da5/app/Fortnite',
+    'IOS': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    'Windows': '4fe75bbc5a674f4f9b356b5c90567da5/app/Fortnite',
+    'Windows Content': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
     'Windows UEFN': '1e8bda5cfbb641b9a9aea8bd62285f73/app/Fortnite_Studio',
-    # 'Switch': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    # 'Switch2': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    # 'PS4': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    # 'PS5': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    # 'XB1': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
-    # 'XSX': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    'Switch': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    'Switch2': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    'PS4': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    'PS5': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    'XB1': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
+    'XSX': '5cb97847cee34581afdbc445400e2f77/app/FortniteContentBuilds',
 }
 
 PLATFORM_COLORS = {
@@ -81,80 +84,62 @@ ANDROID_BODY = {
     "version": "5.2.0"
 }
 
-def save_tokens(data):
-    filtered_data = {
-        "access_token": data.get("access_token"),
-        "refresh_token": data.get("refresh_token"),
-        "expires_at": data.get("expires_at"),
-        "account_id": data.get("account_id")  # utile si tu veux associer un compte
-    }
-    with open(TOKENS_FILE, "w") as f:
-        json.dump(filtered_data, f, indent=4)
-
-def load_tokens():
-    if not os.path.isfile(TOKENS_FILE):
+def getAccesToken(accoutId, deviceId, secret):
+    try:
+        auth = b64encode(f"{ANDROID_CLIENT_ID}:{ANDROID_CLIENT_SECRET}".encode()).decode()
+        resp = requests.post(
+            "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token",
+            data={
+                "grant_type": "device_auth",
+                "account_id": accoutId,
+                "device_id": deviceId,
+                "secret": secret,
+            },
+            headers={
+                "Authorization": f"Basic {auth}",
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        )
+        resp.raise_for_status()
+        return resp.json()['access_token']
+    except requests.RequestException as e:
+        print(f"Error token: {e}")
         return None
-    with open(TOKENS_FILE, "r") as f:
-        return json.load(f)
 
-def get_new_access_token(code):
-    auth = b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
-    data = {
-        "grant_type": "authorization_code",
-        "code": code,
-        "scope": "launcher:download:live:* READ"
-    }
-    headers = {
-        "Authorization": f"Basic {auth}",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-    r = requests.post("https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token", data=data, headers=headers)
-    if r.status_code != 200:
-        print("Error token")
+def getExchangeToken(token):
+    try:
+        resp = requests.get(
+            "https://account-public-service-prod.ol.epicgames.com/account/api/oauth/exchange?consumingClientId=34a02cf8f4414e29b15921876da36f9a",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        )
+        resp.raise_for_status()
+        return resp.json()['code']
+    except requests.RequestException as e:
+        print(f"Error token: {e}")
         return None
-    result = r.json()
-    result["expires_at"] = int(time.time()) + result["expires_in"]
-    save_tokens(result)
-    return result["access_token"]
 
-def refresh_access_token(refresh_token):
-    auth = b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
-    data = {
-        "grant_type": "refresh_token",
-        "refresh_token": refresh_token
-    }
-    headers = {
-        "Authorization": f"Basic {auth}",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-    r = requests.post("https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token", data=data, headers=headers)
-    if r.status_code != 200:
-        print("Erreur refresh_token")
+def getLauncherToken(code):
+    try:
+        auth = b64encode(f"{LAUNCHER_CLIENT_ID}:{LAUNCHER_CLIENT_SECRET}".encode()).decode()
+        resp = requests.post(
+            "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token",
+            data={
+                "grant_type": "exchange_code",
+                "exchange_code": code
+            },
+            headers={
+                "Authorization": f"Basic {auth}",
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        )
+        resp.raise_for_status()
+        return resp.json()['access_token']
+    except requests.RequestException as e:
+        print(f"Error token: {e}")
         return None
-    result = r.json()
-    result["expires_at"] = int(time.time()) + result["expires_in"]
-    save_tokens(result)
-    return result["access_token"]
-
-def get_access_token():
-    tokens = load_tokens()
-    now = int(time.time())
-
-    if tokens:
-        if tokens.get("expires_at", 0) > now:
-            return tokens["access_token"]
-        elif tokens.get("refresh_token"):
-            return refresh_access_token(tokens["refresh_token"])
-
-    if STATIC_REFRESH_TOKEN:
-        return refresh_access_token(STATIC_REFRESH_TOKEN)
-
-    # print("🔐 No valid token. Please log in manually to generate a new token.")
-    # webbrowser.open("https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code")
-    # code = input("📥 Enter the Epic Games code (in the URL after ?code=...): ").strip()
-    # if not code:
-    #     return None
-    # return get_new_access_token(code)
 
 def load_known_versions():
     if os.path.isfile(VERSIONS_FILE):
@@ -230,20 +215,22 @@ def send_discord_embed(platform, version, manifest_id, manifest_hash):
         print(f"Erreur envoi embed : {e}")
 
 def watch_manifests():
-    token = get_access_token()
-    if not token:
-        return
+    token = getAccesToken(ACCOUNT_ID, DEVICE_ID, SECRET_ID)
+    tokenExchange = getExchangeToken(token)
+    tokenLauncher = getLauncherToken(tokenExchange)
 
     known_versions = load_known_versions()
     platforms = list(URLS.keys())
 
     while True:
         for platform in platforms:
-            data = get_manifest(platform, token)
+            data = get_manifest(platform, tokenLauncher)
 
             if data == "REFRESH_TOKEN":
-                token = get_access_token()
-                data = get_manifest(platform, token)
+                token = getAccesToken(ACCOUNT_ID, DEVICE_ID, SECRET_ID)
+                tokenExchange = getExchangeToken(token)
+                tokenLauncher = getLauncherToken(tokenExchange)
+                data = get_manifest(platform, tokenLauncher)
                 if not data or data == "REFRESH_TOKEN":
                     continue
 
